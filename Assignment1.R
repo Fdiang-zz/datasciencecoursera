@@ -1,4 +1,5 @@
 pollutantmean <- function(directory, pollutant, id = 1:332) { 
+
   ## 'directory' is a character vector of length 1 indicating
   ## the location of the CSV files
   
@@ -14,20 +15,26 @@ pollutantmean <- function(directory, pollutant, id = 1:332) {
   ## NOTE: Do not round the result!
   
   monitors <- list.files(file.path(getwd(), directory))
+  total = 0
   
+  #Get that data into memory
   for (monitor in monitors[id]) {
-    if(!exists("df")){
-      temp <- read.csv(file.path(directory, monitor), header = TRUE)
-      df <- temp
-    } 
-      else {
-        temp <- read.csv(file.path(directory, monitor), header = FALSE)
-        df <- rbind(df, temp)
-      }
-    rm(temp)
+    # If main data frame don`t exist, load into it
+    if(!exists("airpolution")){
+      airpolution <- read.csv(file.path(directory, monitor), header = TRUE,na.strings=c("NA","NaN", " ") )
+      #cat("Reading ", monitor, " into airpolution\n")
+      next
+    }
+    
+    #If main data frame exists, load into a temporary one and then concatenate those d'frames
+    if(exists("airpolution")) {
+      temp_dataset <- read.csv(file.path(directory, monitor), header = TRUE,na.strings=c("NA","NaN", " ") )
+      #cat("Reading ", monitor, " into temp_dataset\n")
+      
+      airpolution <- rbind(airpolution, temp_dataset)
+      rm(temp_dataset)
+    }
   }
   
-  
+  mean(airpolution[[pollutant]],na.rm = TRUE)
 }
-
-pollutantmean("specdata")
